@@ -6,7 +6,7 @@ const Users: React.FC<UserProps[]> = ({ posts }) => {
   return (
     <>
       <Header />
-      {posts?.map(
+      {posts.map(
         (
           {
             id,
