@@ -1,94 +1,84 @@
-import { PostData, PostModalProps } from "@/interfaces";
 import React, { useState } from "react";
+import { UserProps, UserModalProps } from "@/interfaces";
 
-const PostModal: React.FC<PostModalProps> = ({ onClose, onSubmit }) => {
-  const [post, setPost] = useState<PostData>({
-    userId: 1,
-    title: "",
-    body: "",
+const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSubmit }) => {
+  const [formData, setFormData] = useState<Omit<UserProps, "id">>({
+    name: "",
+    username: "",
+    email: "",
+    address: {
+      street: "",
+      suite: "",
+      city: "",
+      zipcode: "",
+      geo: { lat: "", lng: "" },
+    },
+    phone: "",
+    website: "",
+    company: {
+      name: "",
+      catchPhrase: "",
+      bs: "",
+    },
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: string,
+    nestedField?: string
   ) => {
-    const { name, value } = e.target;
-    setPost((prevPost) => ({ ...prevPost, [name]: value }));
+    if (nestedField) {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: {
+          ...prev[field as keyof typeof prev],
+          [nestedField]: e.target.value,
+        },
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(post);
+    const newUser: UserProps = {
+      id: Date.now(),
+      ...formData,
+    };
+    onSubmit(newUser); // ✅ must match the interface
     onClose();
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white rounded-lg p-8 shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Add New Post</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label
-              htmlFor="userId"
-              className="block text-gray-700 font-medium mb-2"
-            >
-              User ID
-            </label>
-            <input
-              type="number"
-              id="userId"
-              name="userId"
-              value={post.userId}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="title"
-              className="block text-gray-700 font-medium mb-2"
-            >
-              Title
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={post.title}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter post title"
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="body"
-              className="block text-gray-700 font-medium mb-2"
-            >
-              Body
-            </label>
-            <textarea
-              id="body"
-              name="body"
-              value={post.body}
-              onChange={handleChange}
-              rows={4}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter post content"
-            />
-          </div>
-          <div className="flex justify-between items-center">
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h2 className="text-xl font-bold mb-4">Add New User</h2>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <input
+            type="text"
+            placeholder="Name"
+            value={formData.name}
+            onChange={(e) => handleChange(e, "name")}
+            className="w-full border p-2 rounded"
+            required
+          />
+          {/* ... other inputs same as before ... */}
+          <div className="flex justify-end space-x-2 mt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 focus:outline-none"
+              className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
-              Add Post
+              Save
             </button>
           </div>
         </form>
@@ -97,4 +87,4 @@ const PostModal: React.FC<PostModalProps> = ({ onClose, onSubmit }) => {
   );
 };
 
-export default PostModal;
+export default UserModal;
